@@ -3,7 +3,7 @@ import requests #con esto importas la libreria requests,
 #en este caso son los tipos de cambio actualizados
 import tkinter as tk 
 #from tkinter import ttk #para el styling mas desarrollado del UI
-
+import pygame #importar la libreria pygame para agregar sonido
 def get_tiposdecambio(api_key):
     url = "https://v6.exchangerate-api.com/v6/" + api_key + "/latest/ARS" #link del sitio que vamos a usar para extraer los datos del tipo de cambio
     response= requests.get(url)
@@ -15,6 +15,11 @@ def get_tiposdecambio(api_key):
     print("Blue Rate:", blue)
     return cambio_oficial,blue
 
+def play_completion_sound():
+    pygame.mixer.Sound("/Users/cucu/Desktop/Music/Windows95/TADA.wav").play()
+def play_close_sound():
+    pygame.mixer.Sound("/Users/cucu/Desktop/Music/Windows95/CHIMES.wav").play()
+
 def convert_currency():
     try:
         pesos = float(entry_pesos.get()) 
@@ -22,9 +27,17 @@ def convert_currency():
         exchange = pesos * cambio_oficial 
         parallel_ex = pesos * blue
         label_result.config(text=f"Oficial: {exchange:.2f} USD\nBlue: {parallel_ex:.2f} USD")
+        play_completion_sound()
     except ValueError:
         label_result.config(text="Por favor ingrese un numero valido...")  
 
+def on_closing():
+    play_close_sound()  # Play the close sound
+    root.after(1000, root.destroy)  # Wait for 2 seconds to let the sound play before closing
+#ahora inicializamos pygame para que se reproduzca la intro de Windows 95 compuesta por Brian Eno
+pygame.mixer.init()
+pygame.mixer.music.load("/Users/cucu/Desktop/Music/Windows 95 Startup Sound - Brian Eno - The Microsoft Sound.mp3")
+pygame.mixer.music.play()
 
 api_key= "95203ef207a68485ebd8fdf7" #esta es la llave de la API con la que vamos a acceder a la informacion que nos interesa de la web
 #creo la ventana principal
@@ -40,8 +53,9 @@ root.title("Parallel Currency Converter")
 label_pesos=tk.Label(root, text="Monto en pesos argentinos: ")
 #label_pesos=tk.Label(root, text="Monto en pesos argentinos: ",font="Arial")
 
-label_pesos.pack()
 
+
+label_pesos.pack()
 entry_pesos = tk.Entry(root)
 entry_pesos.focus_set()
 entry_pesos.pack()
@@ -58,6 +72,7 @@ image_label = tk.Label(root, image=image)
 image_label.pack(pady=10)
 
 root.geometry("400x500")
+root.protocol("WM_DELETE_WINDOW", on_closing)
 #ahora corremos la aplicacion
 root.mainloop()
 
